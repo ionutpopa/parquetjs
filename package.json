@@ -20,8 +20,7 @@
     "@types/node-int64": "^0.4.32",
     "@types/thrift": "^0.10.17",
     "@zenfs/core": "^0.14.0",
-    "brotli-wasm": "^3.0.0",
-    "browserify-zlib": "^0.2.0",
+    "brotli-wasm": "^3.0.1",
     "bson": "6.7.0",
     "cross-fetch": "^4.0.0",
     "int53": "^1.0.0",
@@ -87,8 +86,7 @@
     "path": "path-browserify",
     "stream": "readable-stream",
     "thrift": "./node_modules/thrift/lib/nodejs/lib/thrift/browser.js",
-    "util": "util",
-    "zlib": "browserify-zlib"
+    "util": "util"
   },
   "engines": {
     "node": ">=18.18.2"
