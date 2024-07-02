@@ -11,7 +11,7 @@ const baseConfig = {
     global: 'window',
   },
   inject: ['./esbuild-shims.js'],
-  minify: true,
+  minify: false,
   mainFields: ['browser', 'module', 'main'],
   platform: 'browser', // default
   plugins: [compressionBrowserPlugin, wasmPlugin],

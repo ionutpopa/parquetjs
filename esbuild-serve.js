@@ -14,6 +14,7 @@ require('esbuild')
     plugins: [compressionBrowserPlugin, wasmPlugin],
     sourcemap: 'external',
     bundle: true,
+    minify: false,
     globalName: 'parquetjs',
     inject: ['./esbuild-shims.js'],
   })
