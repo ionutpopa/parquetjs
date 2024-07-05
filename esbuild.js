@@ -1,6 +1,6 @@
 const esbuild = require('esbuild');
 const path = require('path');
-const { compressionBrowserPlugin, wasmPlugin } = require('./esbuild-plugins');
+const { compressionBrowserPlugin, wasmPlugin, resolveBrowserFieldPlugin } = require('./esbuild-plugins');
 // esbuild has TypeScript support by default
 const baseConfig = {
   bundle: true,
@@ -14,8 +14,13 @@ const baseConfig = {
   minify: false,
   mainFields: ['browser', 'module', 'main'],
   platform: 'browser', // default
-  plugins: [compressionBrowserPlugin, wasmPlugin],
+  plugins: [
+    wasmPlugin,
+    compressionBrowserPlugin,
+    resolveBrowserFieldPlugin,
+  ],
   target: 'es2020', // default
+  logLevel: 'debug'
 };
 // configuration for generating test code in browser
 const testConfig = {
@@ -32,28 +37,29 @@ const testConfig = {
   platform: 'browser', // default
   plugins: [compressionBrowserPlugin, wasmPlugin],
   target: 'es2020', // default
+
 };
 const targets = [
-  {
-    ...baseConfig,
-    globalName: 'parquetjs',
-    outdir: path.resolve(__dirname, 'dist', 'browser'),
-  },
+  // {
+  //   ...baseConfig,
+  //   globalName: 'parquetjs',
+  //   outdir: path.resolve(__dirname, 'dist', 'browser'),
+  // },
   {
     ...baseConfig,
     format: 'esm',
     outfile: path.resolve(__dirname, 'dist', 'browser', 'parquet.esm.js'),
   },
-  {
-    ...baseConfig,
-    format: 'cjs',
-    outfile: path.resolve(__dirname, 'dist', 'browser', 'parquet.cjs.js'),
-  },
-  // Browser test code below
-  {
-    ...testConfig,
-    outfile: path.resolve(__dirname, 'test', 'browser', 'main.js'),
-  },
+  // {
+  //   ...baseConfig,
+  //   format: 'cjs',
+  //   outfile: path.resolve(__dirname, 'dist', 'browser', 'parquet.cjs.js'),
+  // },
+  // // Browser test code below
+  // {
+  //   ...testConfig,
+  //   outfile: path.resolve(__dirname, 'test', 'browser', 'main.js'),
+  // },
 ];
 Promise.all(targets.map(esbuild.build))
   .then((results) => {

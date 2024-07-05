@@ -1,3 +1,34 @@
+const resolveBrowserFieldPlugin = {
+  name: 'resolve-browser-field',
+  setup(build) {
+    build.onResolve({ filter: /.*/ }, async (args) => {
+      let path = require('path');
+      let fs = require('fs');
+        // console.log("hello world wasm-brotli-------------------------");
+        // console.log("args -path", args.path.indexOf('wasm-brotli'));
+        console.log("hello world wasm-brotli-------------------------");
+      if (args.path.includes('brotli')) {
+        console.log("taco");
+        console.log("args.path", args.path);
+        let pjson = path.resolve(__dirname, 'node_modules', 'brotli-wasm', 'package.json')
+        const pkg = JSON.parse(await fs.promises.readFile(pjson, 'utf8'));
+        let browserPath = path.resolve(__dirname, 'node_modules', 'brotli-wasm', 'index.browser.js')
+        console.log("browserPathbrowserPath", browserPath);
+
+        if (pkg.browser) {
+          return {
+            path: browserPath,
+            // path: p,
+            namespace: 'file',
+          };
+        }
+      }
+      return;
+    });
+  }
+};
+
+
 /**
  * this plugin resolves to a browser version of compression.ts that
  * does not include LZO or Brotli comprssion.
@@ -13,31 +44,21 @@ const compressionBrowserPlugin = {
     });
   },
 };
-
-// Lifted from https://esbuild.github.io/plugins/#webassembly-plugin
-const wasmPlugin = {
-  name: 'wasm',
+let wasmPlugin = {
+  name: "wasm",
   setup(build) {
-    let path = require('path');
-    let fs = require('fs');
-
-    // Webpack might do this automatically, but we need to tell esbuild to use the correct bundler based brotli-wasm script
-    build.onLoad({ filter: /brotli-wasm\/index\.web\.js$/ }, async (args) => {
-      return {
-        contents: await fs.promises.readFile(args.path.replace('index.web.js', 'index.browser.js')),
-      };
-    });
-
+      let path = require('path');
+      let fs = require('fs');
     // Resolve ".wasm" files to a path with a namespace
+      console.log("hello worldlllllll");
     build.onResolve({ filter: /\.wasm$/ }, (args) => {
-      console.log(args);
       // If this is the import inside the stub module, import the
       // binary itself. Put the path in the "wasm-binary" namespace
       // to tell our binary load callback to load the binary file.
-      if (args.namespace === 'wasm-stub') {
+      if (args.namespace === "wasm-stub") {
         return {
           path: args.path,
-          namespace: 'wasm-binary',
+          namespace: "wasm-binary",
         };
       }
 
@@ -48,48 +69,118 @@ const wasmPlugin = {
       // Resolve relative paths to absolute paths here since this
       // resolve callback is given "resolveDir", the directory to
       // resolve imports against.
-      if (args.resolveDir === '') {
+      if (args.resolveDir === "") {
         return; // Ignore unresolvable paths
       }
       return {
-        path: path.isAbsolute(args.path) ? args.path : path.join(args.resolveDir, args.path),
-        namespace: 'wasm-stub',
+        path: path.isAbsolute(args.path)
+          ? args.path
+          : path.join(args.resolveDir, args.path),
+        namespace: "wasm-stub",
       };
     });
 
     // Virtual modules in the "wasm-stub" namespace are filled with
     // the JavaScript code for compiling the WebAssembly binary. The
     // binary itself is imported from a second virtual module.
-    build.onLoad({ filter: /.*/, namespace: 'wasm-stub' }, async (args) => {
-      // const replacements = {
-      //   WASM_PRECOMPILED_BYTES: JSON.stringify(wasmBytes),
-      // };
-      //
-      // const wasmBytes = Array.from(
-      //   readFileSync(resolve(__dirname, "src/xxhash.wasm"))
-      // );
-      // await WebAssembly.instantiate(wasmBytes);
-      console.log(args);
+    build.onLoad({ filter: /.*/, namespace: "wasm-stub" }, async (args) => {
+      console.log("hello worldlllllll");
+      console.log("virual modules in the wasm-stub namespace", args);
       return {
-        contents: `import wasm from ${JSON.stringify(args.path)}
-           export default (imports) =>
-             WebAssembly.instantiate(wasm, imports).then(
-               result => result.instance.exports)`,
-      };
-    });
+      contents: `import wasm from ${JSON.stringify(args.path)}
+          export default (imports) =>
+            WebAssembly.instantiate(wasm, imports).then(
+              result => result.instance.exports)`,
+    }});
 
-    // // Virtual modules in the "wasm-binary" namespace contain the
-    // // actual bytes of the WebAssembly file. This uses esbuild's
-    // // built-in "binary" loader instead of manually embedding the
-    // // binary data inside JavaScript code ourselves.
-    // build.onLoad({ filter: /.*/, namespace: 'wasm-binary' }, async (args) => {
-    //   console.log(args);
-    //   return {
-    //     contents: await fs.promises.readFile(args.path),
-    //     loader: 'binary',
-    //   };
-    // });
+    // Virtual modules in the "wasm-binary" namespace contain the
+    // actual bytes of the WebAssembly file. This uses esbuild's
+    // built-in "binary" loader instead of manually embedding the
+    // binary data inside JavaScript code ourselves.
+    build.onLoad({ filter: /.*/, namespace: "wasm-binary" }, async (args) => ({
+      contents: await fs.promises.readFile(args.path),
+      loader: "binary",
+    }));
   },
 };
 
-module.exports = { compressionBrowserPlugin, wasmPlugin };
+
+// Lifted from https://esbuild.github.io/plugins/#webassembly-plugin
+// const wasmPlugin = {
+//   name: 'wasm',
+//   setup(build) {
+//     let path = require('path');
+//     let fs = require('fs');
+
+//     // Resolve ".wasm" files to a path with a namespace
+//     build.onResolve({ filter: /\.wasm$/ }, (args) => {
+//       console.log(args);
+//       // If this is the import inside the stub module, import the
+//       // binary itself. Put the path in the "wasm-binary" namespace
+//       // to tell our binary load callback to load the binary file.
+//       if (args.namespace === 'wasm-stub') {
+//         return {
+//           path: args.path,
+//           namespace: 'wasm-binary',
+//         };
+//       }
+
+//       // Otherwise, generate the JavaScript stub module for this
+//       // ".wasm" file. Put it in the "wasm-stub" namespace to tell
+//       // our stub load callback to fill it with JavaScript.
+//       //
+//       // Resolve relative paths to absolute paths here since this
+//       // resolve callback is given "resolveDir", the directory to
+//       // resolve imports against.
+//       if (args.resolveDir === '') {
+//         return; // Ignore unresolvable paths
+//       }
+//       return {
+//         path: path.isAbsolute(args.path) ? args.path : path.join(args.resolveDir, args.path),
+//         namespace: 'wasm-stub',
+//       };
+//     });
+//     // Webpack might do this automatically, but we need to tell esbuild to use the correct bundler based brotli-wasm script
+//     build.onLoad({ filter: /brotli-wasm\/index\.web\.js$/ }, async (args) => {
+//       return {
+//         contents: await fs.promises.readFile(args.path.replace('index.web.js', 'index.browser.js')),
+//       };
+//     });
+
+
+//     // Virtual modules in the "wasm-stub" namespace are filled with
+//     // the JavaScript code for compiling the WebAssembly binary. The
+//     // binary itself is imported from a second virtual module.
+//     build.onLoad({ filter: /.*/, namespace: 'wasm-stub' }, async (args) => {
+//       // const replacements = {
+//       //   WASM_PRECOMPILED_BYTES: JSON.stringify(wasmBytes),
+//       // };
+//       //
+//       // const wasmBytes = Array.from(
+//       //   readFileSync(resolve(__dirname, "src/xxhash.wasm"))
+//       // );
+//       // await WebAssembly.instantiate(wasmBytes);
+//       console.log(args);
+//       return {
+//         contents: `import wasm from ${JSON.stringify(args.path)}
+//            export default (imports) =>
+//              WebAssembly.instantiate(wasm, imports).then(
+//                result => result.instance.exports)`,
+//       };
+//     });
+
+//     // // Virtual modules in the "wasm-binary" namespace contain the
+//     // // actual bytes of the WebAssembly file. This uses esbuild's
+//     // // built-in "binary" loader instead of manually embedding the
+//     // // binary data inside JavaScript code ourselves.
+//     // build.onLoad({ filter: /.*/, namespace: 'wasm-binary' }, async (args) => {
+//     //   console.log(args);
+//     //   return {
+//     //     contents: await fs.promises.readFile(args.path),
+//     //     loader: 'binary',
+//     //   };
+//     // });
+//   },
+// };
+
+module.exports = { compressionBrowserPlugin, wasmPlugin, resolveBrowserFieldPlugin };

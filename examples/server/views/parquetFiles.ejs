@@ -20,6 +20,7 @@
                 let record = null;
                 output.innerHTML = "";
                 while (record = await cursor.next()) {
+                    console.log("record----------", record);
                     output.innerHTML += `\nRecord: ${JSON.stringify(record, (_, v) => typeof v === 'bigint' ? v.toString() : v, 2)}`;
                     console.log("record", record);
                 }
