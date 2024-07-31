@@ -1,5 +1,3 @@
-// Thanks to https://github.com/kbajalc/parquets
-
 import parquet_thrift from '../gen-nodejs/parquet_types';
 import {
   Statistics,
@@ -18,7 +16,7 @@ import Int64 from 'node-int64';
 export type ParquetCodec = 'PLAIN' | 'RLE';
 export type ParquetCompression = 'UNCOMPRESSED' | 'GZIP' | 'SNAPPY' | 'LZO' | 'BROTLI' | 'LZ4';
 export type RepetitionType = 'REQUIRED' | 'OPTIONAL' | 'REPEATED';
-export type ParquetType = PrimitiveType | OriginalType;
+export type ParquetType = PrimitiveType | OriginalType | LogicalType;
 
 export type PrimitiveType =
   // Base Types
@@ -56,6 +54,10 @@ export type OriginalType =
   | 'BSON' // 20
   | 'INTERVAL'; // 21
 
+export type LogicalType =
+  // Logical Types
+  'DATE' | 'TIME' | 'TIMESTAMP';
+
 export type SchemaDefinition = Record<string, FieldDefinition>;
 
 export interface FieldDefinition {
@@ -71,6 +73,7 @@ export interface FieldDefinition {
   num_children?: NumChildrenField;
   precision?: number;
   scale?: number;
+  logicalType?: LogicalType;
 }
 
 export interface ParquetField {
@@ -79,6 +82,7 @@ export interface ParquetField {
   statistics?: Statistics | false;
   primitiveType?: PrimitiveType;
   originalType?: OriginalType;
+  logicalType?: LogicalType;
   repetitionType: RepetitionType;
   typeLength?: number;
   encoding?: ParquetCodec;
