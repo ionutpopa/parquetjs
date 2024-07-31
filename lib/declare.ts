@@ -73,7 +73,6 @@ export interface FieldDefinition {
   num_children?: NumChildrenField;
   precision?: number;
   scale?: number;
-  logicalType?: LogicalType;
 }
 
 export interface ParquetField {
