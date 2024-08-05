@@ -56,7 +56,7 @@ export type OriginalType =
 
 export type LogicalType =
   // Logical Types
-  'DATE' | 'TIME' | 'TIMESTAMP';
+  'TIMESTAMP'; // 0
 
 export type SchemaDefinition = Record<string, FieldDefinition>;
 
