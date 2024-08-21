@@ -95,6 +95,7 @@ class ParquetCursor {
         this.columnList
       );
 
+      // now this one is *@($&ing up, it's dematerializing records
       this.rowGroup = parquet_shredder.materializeRecords(this.schema, rowBuffer);
       this.rowGroupIndex++;
       this.cursorIndex = 0;
@@ -730,7 +731,7 @@ export class ParquetEnvelopeReader {
 
       buffer.columnData![colKey.join(',')] = await this.readColumnChunk(schema, colChunk);
     }
-
+    console.log("buffer columnData outside forEach: ", buffer.columnData);
     return buffer;
   }
 
@@ -984,7 +985,7 @@ async function decodeDictionaryPage(cursor: Cursor, header: parquet_thrift.PageH
   );
 }
 
-async function decodeDataPage(cursor: Cursor, header: parquet_thrift.PageHeader, opts: Options) {
+async function decodeDataPage(cursor: Cursor, header: parquet_thrift.PageHeader, opts: Options): Promise<Record<string,any>> {
   const cursorEnd = cursor.offset + header.compressed_page_size;
 
   const dataPageHeader = header.data_page_header!;
@@ -1059,7 +1060,7 @@ async function decodeDataPage(cursor: Cursor, header: parquet_thrift.PageHeader,
   };
 }
 
-async function decodeDataPageV2(cursor: Cursor, header: parquet_thrift.PageHeader, opts: Options) {
+async function decodeDataPageV2(cursor: Cursor, header: parquet_thrift.PageHeader, opts: Options): Promise<Record<string, any>> {
   const cursorEnd = cursor.offset + header.compressed_page_size;
   const dataPageHeaderV2 = header.data_page_header_v2!;
 
@@ -1098,6 +1099,7 @@ async function decodeDataPageV2(cursor: Cursor, header: parquet_thrift.PageHeade
       cursor.buffer.subarray(cursor.offset, cursorEnd)
     );
 
+    // with the correction, the inflated valuesBufCursor matches the rust version by this point.
     valuesBufCursor = {
       buffer: valuesBuf,
       offset: 0,
