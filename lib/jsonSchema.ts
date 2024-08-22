@@ -101,6 +101,11 @@ const fromJsonSchemaField =
     switch (fieldValue.type) {
       case 'string':
         if (fieldValue.format && fieldValue.format == 'date-time') {
+          const unit = fieldValue['unit'];
+          const isAdjustedToUTC = fieldValue['isAdjustedToUTC'] !== false;
+          if (unit !== undefined && isAdjustedToUTC !== undefined) {
+            return fields.createLogicalTimestampField(unit, isAdjustedToUTC, optional);
+          }
           return fields.createTimestampField(optional);
         }
         return fields.createStringField(optional);
