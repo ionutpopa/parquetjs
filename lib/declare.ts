@@ -26,7 +26,7 @@ export type PrimitiveType =
   | 'INT96' // 3
   | 'FLOAT' // 4
   | 'DOUBLE' // 5
-  | 'BYTE_ARRAY' // 6,
+  | 'BYTE_ARRAY' // 6
   | 'FIXED_LEN_BYTE_ARRAY'; // 7
 
 export type OriginalType =
@@ -73,6 +73,8 @@ export interface FieldDefinition {
   num_children?: NumChildrenField;
   precision?: number;
   scale?: number;
+  isAdjustedToUTC?: boolean;
+  unit?: 'MILLIS' | 'MICROS' | 'NANOS';
 }
 
 export interface ParquetField {
@@ -88,6 +90,8 @@ export interface ParquetField {
   compression?: ParquetCompression;
   precision?: number;
   scale?: number;
+  isAdjustedToUTC?: boolean;
+  unit?: 'MILLIS' | 'MICROS' | 'NANOS';
   rLevelMax: number;
   dLevelMax: number;
   isNested?: boolean;

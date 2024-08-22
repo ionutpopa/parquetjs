@@ -1,6 +1,6 @@
 'use strict';
 // Thanks to https://github.com/kbajalc/parquets for some of the code.
-import { PrimitiveType, OriginalType, ParquetType, FieldDefinition, ParquetField } from './declare';
+import { PrimitiveType, OriginalType, ParquetType, FieldDefinition, ParquetField, LogicalType } from './declare';
 import { Options } from './codec/types';
 import type { Document as BsonDocument } from 'bson';
 // BSON uses top level awaits, so use require for now
@@ -12,7 +12,10 @@ interface ParquetTypeDataObject {
   toPrimitive: (x: any) => any;
   fromPrimitive?: (x: any) => any;
   originalType?: OriginalType;
+  logicalType?: LogicalType;
   typeLength?: number;
+  isAdjustedToUTC?: boolean;
+  unit?: 'MILLIS' | 'MICROS' | 'NANOS';
 }
 
 interface INTERVAL {
@@ -23,7 +26,7 @@ interface INTERVAL {
 
 export function getParquetTypeDataObject(
   type: ParquetType,
-  field?: ParquetField | Options | FieldDefinition
+  field?: ParquetField | FieldDefinition
 ): ParquetTypeDataObject {
   if (type === 'DECIMAL') {
     if (field?.typeLength !== undefined && field?.typeLength !== null) {
@@ -46,6 +49,19 @@ export function getParquetTypeDataObject(
         originalType: 'DECIMAL',
         toPrimitive: toPrimitive_INT64,
       };
+    }
+  } else if (type === 'TIMESTAMP') {
+    if (field && field?.unit) {
+      return {
+        primitiveType: 'INT64',
+        logicalType: 'TIMESTAMP',
+        toPrimitive: field.unit === 'MILLIS' ? toPrimitive_TIMESTAMP_MILLIS : toPrimitive_TIMESTAMP_MICROS,
+        fromPrimitive: field.unit === 'MILLIS' ? fromPrimitive_TIMESTAMP_MILLIS : fromPrimitive_TIMESTAMP_MICROS,
+        isAdjustedToUTC: 'isAdjustedToUTC' in field ? field.isAdjustedToUTC : undefined,
+        unit: field.unit,
+      };
+    } else {
+      throw new Error("TIMESTAMP type requires 'unit' parameter.");
     }
   } else {
     return PARQUET_LOGICAL_TYPE_DATA[type];
@@ -82,6 +98,7 @@ const PARQUET_LOGICAL_TYPES = new Set<string>([
   'INTERVAL',
   'MAP',
   'LIST',
+  'TIMESTAMP', // Ensure TIMESTAMP LogicalType is included
 ] satisfies ParquetType[]);
 
 const PARQUET_LOGICAL_TYPE_DATA: Record<string, ParquetTypeDataObject> = {
@@ -149,14 +166,22 @@ const PARQUET_LOGICAL_TYPE_DATA: Record<string, ParquetTypeDataObject> = {
   TIMESTAMP_MILLIS: {
     primitiveType: 'INT64',
     originalType: 'TIMESTAMP_MILLIS',
+    logicalType: 'TIMESTAMP',
     toPrimitive: toPrimitive_TIMESTAMP_MILLIS,
     fromPrimitive: fromPrimitive_TIMESTAMP_MILLIS,
   },
   TIMESTAMP_MICROS: {
     primitiveType: 'INT64',
     originalType: 'TIMESTAMP_MICROS',
+    logicalType: 'TIMESTAMP',
     toPrimitive: toPrimitive_TIMESTAMP_MICROS,
     fromPrimitive: fromPrimitive_TIMESTAMP_MICROS,
+  },
+  TIMESTAMP: {
+    primitiveType: 'INT64',
+    logicalType: 'TIMESTAMP',
+    toPrimitive: toPrimitive_TIMESTAMP_MILLIS, // Default for TIMESTAMP, unit should define specific function
+    fromPrimitive: fromPrimitive_TIMESTAMP_MILLIS,
   },
   UINT_8: {
     primitiveType: 'INT32',
