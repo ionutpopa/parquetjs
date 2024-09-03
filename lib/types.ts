@@ -26,7 +26,7 @@ interface INTERVAL {
 
 export function getParquetTypeDataObject(
   type: ParquetType,
-  field?: ParquetField | FieldDefinition
+  field?: ParquetField | Options | FieldDefinition
 ): ParquetTypeDataObject {
   if (type === 'DECIMAL') {
     if (field?.typeLength !== undefined && field?.typeLength !== null) {

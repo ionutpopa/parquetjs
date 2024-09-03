@@ -22,6 +22,8 @@ export interface Options {
   name?: string;
   precision?: number;
   scale?: number;
+  isAdjustedToUTC?: boolean;
+  unit?: 'MILLIS' | 'MICROS' | 'NANOS';
 }
 
 export interface Cursor {
