@@ -249,3 +249,47 @@ describe('Field Builders: Lists', function () {
     assert.equal(groupNameElementsMeta.primitiveType, 'BYTE_ARRAY');
   });
 });
+
+describe('Field Builders: Logical Timestamp', function () {
+  it('Can use logical timestamp field with MILLIS', function () {
+    const schema = new ParquetSchema({
+      created_at: fields.createLogicalTimestampField('MILLIS', true),
+    });
+    const c = schema.fields.created_at;
+    assert.equal(c.name, 'created_at');
+    assert.equal(c.primitiveType, 'INT64');
+    assert.equal(c.logicalType, 'TIMESTAMP');
+    assert.equal(c.unit, 'MILLIS');
+    assert.equal(c.isAdjustedToUTC, true);
+    assert.deepEqual(c.path, ['created_at']);
+    assert.equal(c.repetitionType, 'OPTIONAL');
+  });
+
+  it('Can use logical timestamp field with MICROS', function () {
+    const schema = new ParquetSchema({
+      created_at: fields.createLogicalTimestampField('MICROS', false),
+    });
+    const c = schema.fields.created_at;
+    assert.equal(c.name, 'created_at');
+    assert.equal(c.primitiveType, 'INT64');
+    assert.equal(c.logicalType, 'TIMESTAMP');
+    assert.equal(c.unit, 'MICROS');
+    assert.equal(c.isAdjustedToUTC, true);
+    assert.deepEqual(c.path, ['created_at']);
+    assert.equal(c.repetitionType, 'REQUIRED');
+  });
+
+  it('Can use logical timestamp field with NANOS', function () {
+    const schema = new ParquetSchema({
+      created_at: fields.createLogicalTimestampField('NANOS', false, false, { isAdjustedToUTC: false }),
+    });
+    const c = schema.fields.created_at;
+    assert.equal(c.name, 'created_at');
+    assert.equal(c.primitiveType, 'INT64');
+    assert.equal(c.logicalType, 'TIMESTAMP');
+    assert.equal(c.unit, 'NANOS');
+    assert.equal(c.isAdjustedToUTC, false);
+    assert.deepEqual(c.path, ['created_at']);
+    assert.equal(c.repetitionType, 'REQUIRED');
+  });
+});

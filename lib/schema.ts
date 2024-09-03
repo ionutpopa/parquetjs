@@ -184,6 +184,8 @@ function buildFields(schema: SchemaDefinition, rLevelParentMax?: number, dLevelP
       typeLength: opts.typeLength || typeDef.typeLength,
       rLevelMax: rLevelMax,
       dLevelMax: dLevelMax,
+      isAdjustedToUTC: opts.isAdjustedToUTC,
+      unit: opts.unit,
     };
   }
 
