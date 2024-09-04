@@ -113,8 +113,8 @@ export const getThriftEnum = function (klass: Enums, value: unknown) {
     }
   }
 
-  throw 'Invalid ENUM value';
-};
+  throw `Invalid ENUM value: ${value}`;
+}
 
 export const fopen = function (filePath: string | Buffer | URL): Promise<number> {
   return new Promise((resolve, reject) => {
