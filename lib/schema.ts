@@ -174,6 +174,7 @@ function buildFields(schema: SchemaDefinition, rLevelParentMax?: number, dLevelP
       name: name,
       primitiveType: typeDef.primitiveType,
       originalType: typeDef.originalType,
+      logicalType: typeDef.logicalType,
       path: path.concat([name]),
       repetitionType: repetitionType,
       encoding: opts.encoding,
