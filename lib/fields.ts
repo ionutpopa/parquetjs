@@ -46,16 +46,10 @@ export function createStructListField(fields: SchemaDefinition, optional = true)
   return {
     type: 'LIST',
     optional,
+    repeated: true,
     fields: {
-      list: {
-        repeated: true,
-        fields: {
-          element: {
-            fields,
-          },
-        },
-      },
-    },
+      ...fields
+    }
   };
 }
 
@@ -65,20 +59,10 @@ export function createListField(
   elementOptions: FieldDefinition = { optional: true }
 ): FieldDefinition {
   return {
-    type: 'LIST',
+    type,
+    repeated: true,
     optional,
-    fields: {
-      list: {
-        repeated: true,
-        fields: {
-          element: {
-            optional: true,
-            ...elementOptions,
-            type,
-          },
-        },
-      },
-    },
+    ...elementOptions
   };
 }
 
